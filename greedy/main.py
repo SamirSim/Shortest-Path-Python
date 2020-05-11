@@ -1,26 +1,28 @@
 from greedy import *
 from graph import graphs
-from random import seed
-import random 
+from graph import graphs as graphInit
+from copy import copy, deepcopy
 
-seed(3)
+graphs = deepcopy(graphInit)
+
 MIGRATION_COST = 10
 
-costs = [(1,10), (10,10), (10,100)]
+costs = [(1,10), (10000,1), (10,10000)]
 
 for (weight_migration, weight_overload) in costs:
 	i = 0
 	print("Migration Weight:", weight_migration, "Overload Weight:", weight_overload, " : ")
-	for (edges, vertices) in graphs:
-		graph = edges
+	for edges in graphs:
+		#graphTop = edges
 		#start = input('Start cell  : (From 0 to ' + str(nbVertices-1) + '): ')
 		#target = input('End cell  : (From 0 to ' + str(nbVertices-1) + '): ')
+		currentEdges = deepcopy(edges)
 		start = 0
 		target = 67
 		mst = [[]]
-		mst, probabilities = primMST(graph, mst, MIGRATION_COST, weight_migration, weight_overload)
+		mst, probabilities = primMST(currentEdges, mst, MIGRATION_COST, weight_migration, weight_overload)
 		graphDict = genGraphDict(mst)
 		path = bfs(graphDict, start, target)
-		distance, nbMigrations, nbOverloadedCells = shortest(path, graph, target, MIGRATION_COST, weight_migration, weight_overload, probabilities)
+		distance, nbMigrations, nbOverloadedCells = shortest(path, currentEdges, target, MIGRATION_COST, weight_migration, weight_overload, probabilities)
 		print("Graph:", i , "Path:", path, "Distance:",  distance, "Nb Migrations:", nbMigrations, "Nb Overloaded cells:", nbOverloadedCells)
 		i = i + 1
