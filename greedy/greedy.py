@@ -2,11 +2,10 @@ import sys
 from random import seed
 import random 
 
-seed(3)
-
 from sys import maxsize 
 INT_MAX = maxsize 
 V = 68
+
 
 
 def isValidEdge(u, v, inMST): 
@@ -18,9 +17,9 @@ def isValidEdge(u, v, inMST):
 		return False
 	return True
 
-def primMST(graph, mst, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD): 
-	graph, probabilities = init(graph, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD) 
-	V = len(graph)
+def primMST(graphTop, mst, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD): 
+	graphTop, probabilities = init(graphTop, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD) 
+	V = len(graphTop)
 	mst = [[0 for i in range(V)] for j in range(V)]
 	inMST = [False] * V 
 
@@ -35,9 +34,9 @@ def primMST(graph, mst, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD):
 		b = -1
 		for i in range(V): 
 			for j in range(V): 
-				if graph[i][j] + graph[j][j]< minn: 
+				if graphTop[i][j] + graphTop[j][j]< minn: 
 					if isValidEdge(i, j, inMST): 
-						minn = graph[i][j] + graph[j][j]
+						minn = graphTop[i][j] + graphTop[j][j]
 						a = i 
 						b = j 
 
@@ -54,7 +53,7 @@ def primMST(graph, mst, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD):
 	
 	return mst, probabilities
 
-def bfs(graph, start, end):
+def bfs(graphTop, start, end):
 		queue = []
 		visited = []
 		queue.append([start])
@@ -64,7 +63,7 @@ def bfs(graph, start, end):
 				visited.append(node)
 				if node == end:
 						return path
-				for adjacent in graph.get(node, []):
+				for adjacent in graphTop.get(node, []):
 					if adjacent not in visited:
 						new_path = list(path)
 						new_path.append(adjacent)
@@ -80,31 +79,41 @@ def genGraphDict(mst):
 		graphDict[node] = adjacents
 	return graphDict
 
-def init(graph, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD):
-	nbVertices = len(graph)
+def init(graphTop, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD):
+	#print(MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD)
+
+	nbVertices = len(graphTop)
 	# seed random number generator
 	probabilities = []
+	seed(1)
+
 	# generate random numbers between 0-1
 	for _ in range(nbVertices):
 		probabilities.append(random.uniform(0,1))
 
 	for i in range(nbVertices):
-		graph[i][i] = WEIGHT_OVERLOAD * probabilities[i]
-		for j in range(nbVertices):
-			if graph[i][j] == MIGRATION_COST:
-				graph[i][j] = WEIGHT_MIGRATION * graph[i][j]
-	
-	return graph, probabilities
+		graphTop[i][i] = WEIGHT_OVERLOAD * probabilities[i]
 
-def shortest(path, graph, target, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD, probabilities):
+	for i in range(nbVertices):
+		for j in range(nbVertices):
+			#print(i,j,graph[i][j])
+			if graphTop[i][j] == MIGRATION_COST:
+								#print(i, j, WEIGHT_MIGRATION * MIGRATION_COST)
+				graphTop[i][j] = WEIGHT_MIGRATION * MIGRATION_COST
+
+				#print(WEIGHT_MIGRATION, MIGRATION_COST, graph[i][j])
+	
+	return graphTop, probabilities
+
+def shortest(path, graphTop, target, MIGRATION_COST, WEIGHT_MIGRATION, WEIGHT_OVERLOAD, probabilities):
 	nbMigrations, nbOverloadedCells, distance = 0, 0, 0
 
 	for i in range(len(path)-1):
 		current = path[i]
 		next = path[i+1]
-		distance = distance + graph[current][next] + graph[next][next]
-
-		if graph[current][next] == WEIGHT_MIGRATION * MIGRATION_COST: 
+		distance = distance + graphTop[current][next] + graphTop[next][next]
+		#print(current, next, graph[current][next], WEIGHT_MIGRATION * MIGRATION_COST)
+		if graphTop[current][next] == WEIGHT_MIGRATION * MIGRATION_COST: 
 			nbMigrations = nbMigrations + 1
 
 	for i in path:
